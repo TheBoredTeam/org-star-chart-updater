@@ -8,6 +8,10 @@ const API_VERSION = '2026-03-10';
 const DEFAULT_OWNER = 'TheBoredTeam';
 const DEFAULT_OUTPUT_ROOT = 'projects';
 const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const PRIMER_DATA_BLUE = {
+  emphasis: '#006edb',
+  muted: '#d1f0ff',
+};
 
 export function parseRepositoryList(value, owner = DEFAULT_OWNER) {
   if (typeof owner !== 'string' || !/^[A-Za-z0-9-]+$/.test(owner)) {
@@ -302,7 +306,8 @@ export function renderStarHistorySvg(
         background: '#0d1117',
         border: '#30363d',
         grid: '#21262d',
-        line: '#58a6ff',
+        area: PRIMER_DATA_BLUE.muted,
+        line: PRIMER_DATA_BLUE.emphasis,
         muted: '#8b949e',
         text: '#f0f6fc',
       }
@@ -310,7 +315,8 @@ export function renderStarHistorySvg(
         background: '#ffffff',
         border: '#d0d7de',
         grid: '#d8dee4',
-        line: '#0969da',
+        area: PRIMER_DATA_BLUE.muted,
+        line: PRIMER_DATA_BLUE.emphasis,
         muted: '#656d76',
         text: '#1f2328',
       };
@@ -372,7 +378,7 @@ export function renderStarHistorySvg(
     <text x="${margin.left}" y="64" fill="${palette.muted}" font-size="13">${escapeXml(repository)}</text>
     ${yTicks}
     ${xTicks}
-    <path d="${areaPath}" fill="${palette.line}" opacity="0.12" />
+    <path d="${areaPath}" fill="${palette.area}" />
     <path d="${linePath}" fill="none" stroke="${palette.line}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
     <circle cx="${lastPoint.x.toFixed(2)}" cy="${lastPoint.y.toFixed(2)}" r="5" fill="${palette.line}" stroke="${palette.background}" stroke-width="2" />
     <text x="${width - margin.right}" y="${height - 14}" text-anchor="end" fill="${palette.muted}" font-size="11">Updated ${escapeXml(updatedDate)}</text>
