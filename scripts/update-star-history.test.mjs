@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import {
+  buildMonotonePath,
   buildDailySeries,
   escapeXml,
   fetchAllStargazers,
@@ -77,6 +78,17 @@ test('escapeXml protects SVG text', () => {
   );
 });
 
+test('buildMonotonePath smooths points without replacing the endpoints', () => {
+  const path = buildMonotonePath([
+    { x: 0, y: 0 },
+    { x: 10, y: 4 },
+    { x: 20, y: 9 },
+  ]);
+  assert.match(path, /^M0\.00,0\.00 C/);
+  assert.match(path, /20\.00,9\.00$/);
+  assert.doesNotMatch(path, / L/);
+});
+
 test('renderStarHistorySvg emits distinct accessible themes', () => {
   const series = [
     { date: '2026-08-01', stars: 3 },
@@ -101,6 +113,7 @@ test('renderStarHistorySvg emits distinct accessible themes', () => {
   assert.match(light, /Updated Aug 4, 2026<\/text>/);
   assert.doesNotMatch(light, /T00:00:00|UTC/);
   assert.match(light, /#0969da/);
+  assert.match(light, /<path d="M[^>]+ C/);
   assert.match(dark, /#58a6ff/);
   assert.doesNotMatch(light, /height="32" rx="16"/);
   assert.doesNotMatch(dark, /height="32" rx="16"/);

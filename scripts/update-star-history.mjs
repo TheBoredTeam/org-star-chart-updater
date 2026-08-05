@@ -233,6 +233,61 @@ function formatUpdatedDate(value) {
   }).format(date);
 }
 
+function coordinate(value) {
+  return (Math.abs(value) < 0.005 ? 0 : value).toFixed(2);
+}
+
+export function buildMonotonePath(points) {
+  if (!Array.isArray(points) || points.length === 0) return '';
+  if (points.length === 1) return `M${coordinate(points[0].x)},${coordinate(points[0].y)}`;
+
+  const slopes = points.slice(0, -1).map((point, index) => {
+    const next = points[index + 1];
+    const deltaX = next.x - point.x;
+    if (deltaX <= 0) throw new Error('Monotone path points must have increasing x values');
+    return (next.y - point.y) / deltaX;
+  });
+  const tangents = new Array(points.length);
+  tangents[0] = slopes[0];
+  tangents[points.length - 1] = slopes.at(-1);
+  for (let index = 1; index < points.length - 1; index += 1) {
+    tangents[index] = (slopes[index - 1] + slopes[index]) / 2;
+  }
+
+  for (let index = 0; index < slopes.length; index += 1) {
+    if (slopes[index] === 0) {
+      tangents[index] = 0;
+      tangents[index + 1] = 0;
+      continue;
+    }
+    const alpha = tangents[index] / slopes[index];
+    const beta = tangents[index + 1] / slopes[index];
+    const magnitude = Math.hypot(alpha, beta);
+    if (magnitude > 3) {
+      const scale = 3 / magnitude;
+      tangents[index] = scale * alpha * slopes[index];
+      tangents[index + 1] = scale * beta * slopes[index];
+    }
+  }
+
+  let path = `M${coordinate(points[0].x)},${coordinate(points[0].y)}`;
+  for (let index = 0; index < slopes.length; index += 1) {
+    const point = points[index];
+    const next = points[index + 1];
+    const deltaX = next.x - point.x;
+    const firstControl = {
+      x: point.x + deltaX / 3,
+      y: point.y + tangents[index] * deltaX / 3,
+    };
+    const secondControl = {
+      x: next.x - deltaX / 3,
+      y: next.y - tangents[index + 1] * deltaX / 3,
+    };
+    path += ` C${coordinate(firstControl.x)},${coordinate(firstControl.y)} ${coordinate(secondControl.x)},${coordinate(secondControl.y)} ${coordinate(next.x)},${coordinate(next.y)}`;
+  }
+  return path;
+}
+
 export function renderStarHistorySvg(
   series,
   { repository, theme = 'light', generatedAt = series.at(-1)?.date } = {},
@@ -285,11 +340,9 @@ export function renderStarHistorySvg(
     }
     return { x: xFor(timestamp), y: yFor(stars) };
   });
-  const linePath = points
-    .map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`)
-    .join(' ');
+  const linePath = buildMonotonePath(points);
   const baseline = margin.top + plotHeight;
-  const areaPath = `${linePath} L${points.at(-1).x.toFixed(2)},${baseline.toFixed(2)} L${points[0].x.toFixed(2)},${baseline.toFixed(2)} Z`;
+  const areaPath = `${linePath} L${coordinate(points.at(-1).x)},${coordinate(baseline)} L${coordinate(points[0].x)},${coordinate(baseline)} Z`;
 
   const yTicks = linearTickValues(yMaximum).map((value) => {
     const y = yFor(value);
