@@ -1,4 +1,4 @@
-name: Update org star chart
+name: Update organization star histories
 
 on:
   schedule:
@@ -10,8 +10,12 @@ permissions:
 
 jobs:
   update:
+    env:
+      STAR_HISTORY_OWNER: TheBoredTeam
+      STAR_HISTORY_REPOSITORIES: |
+        boring.notch
     concurrency:
-      group: gh-stars-storage
+      group: star-history-updater
       cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
@@ -21,19 +25,21 @@ jobs:
         with:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          repositories: boring.notch
+          owner: ${{ env.STAR_HISTORY_OWNER }}
+          repositories: ${{ env.STAR_HISTORY_REPOSITORIES }}
+          permission-contents: write
+          permission-metadata: read
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: nicoloboschi/gh-stars@c659f0480850de4072c66927d0a6c86769f416c5
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          repository: TheBoredTeam/boring.notch
-          history-path: projects/boring.notch/data.json
-          svg-path: projects/boring.notch/chart.svg
-          line-color: '#14b8a6'
-      - name: Commit chart
+      - name: Update star histories
+        run: node scripts/update-star-history.mjs
+        env:
+          STAR_HISTORY_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          STAR_HISTORY_OWNER: ${{ env.STAR_HISTORY_OWNER }}
+          STAR_HISTORY_REPOSITORIES: ${{ env.STAR_HISTORY_REPOSITORIES }}
+      - name: Commit star histories
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add projects/boring.notch
+          git add projects
           git diff --cached --quiet || git commit -m 'chore: update OWNER/PROJECT star history'
           git push
