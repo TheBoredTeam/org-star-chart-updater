@@ -92,7 +92,10 @@ test('renderStarHistorySvg emits distinct accessible themes', () => {
   });
 
   assert.match(light, /<title[^>]*>TheBoredTeam\/boring\.notch Star History<\/title>/);
-  assert.match(light, /<desc[^>]*>7 current GitHub stargazers/);
+  assert.match(light, /<desc[^>]*>7 current GitHub stargazers as of Aug 4, 2026/);
+  assert.match(light, />7 stars<\/text>/);
+  assert.match(light, /Updated Aug 4, 2026<\/text>/);
+  assert.doesNotMatch(light, /T00:00:00|UTC/);
   assert.match(light, /#0969da/);
   assert.match(dark, /#58a6ff/);
   assert.doesNotMatch(light, /height="32" rx="16"/);

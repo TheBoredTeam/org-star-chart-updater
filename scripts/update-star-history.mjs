@@ -194,6 +194,17 @@ function formatNumber(value) {
   return value.toLocaleString('en-US');
 }
 
+function formatUpdatedDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid generatedAt date: ${value}`);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
 export function renderStarHistorySvg(
   series,
   { repository, theme = 'light', generatedAt = series.at(-1)?.date } = {},
@@ -270,20 +281,22 @@ export function renderStarHistorySvg(
 
   const lastPoint = points.at(-1);
   const title = `${repository} Star History`;
+  const updatedDate = formatUpdatedDate(generatedAt);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title description">
   <title id="title">${escapeXml(title)}</title>
-  <desc id="description">${formatNumber(total)} current GitHub stargazers through ${escapeXml(generatedAt)}.</desc>
+  <desc id="description">${formatNumber(total)} current GitHub stargazers as of ${escapeXml(updatedDate)}.</desc>
   <rect width="${width}" height="${height}" rx="12" fill="${palette.background}" stroke="${palette.border}" />
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
     <text x="${margin.left}" y="40" fill="${palette.text}" font-size="24" font-weight="600">Star History</text>
+    <text x="${width - margin.right}" y="42" text-anchor="end" fill="${palette.text}" font-size="18" font-weight="600">${formatNumber(total)} stars</text>
     <text x="${margin.left}" y="64" fill="${palette.muted}" font-size="13">${escapeXml(repository)}</text>
     ${yTicks}
     ${xTicks}
     <path d="${areaPath}" fill="${palette.line}" opacity="0.12" />
     <path d="${linePath}" fill="none" stroke="${palette.line}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
     <circle cx="${lastPoint.x.toFixed(2)}" cy="${lastPoint.y.toFixed(2)}" r="5" fill="${palette.line}" stroke="${palette.background}" stroke-width="2" />
-    <text x="${width - margin.right}" y="${height - 14}" text-anchor="end" fill="${palette.muted}" font-size="11">${formatNumber(total)} stars · Updated ${escapeXml(generatedAt)} UTC</text>
+    <text x="${width - margin.right}" y="${height - 14}" text-anchor="end" fill="${palette.muted}" font-size="11">Updated ${escapeXml(updatedDate)}</text>
   </g>
 </svg>
 `;
