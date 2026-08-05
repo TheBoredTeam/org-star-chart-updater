@@ -112,11 +112,9 @@ test('renderStarHistorySvg emits distinct accessible themes', () => {
   assert.doesNotMatch(light, />20,000<\/text>/);
   assert.match(light, /Updated Aug 4, 2026<\/text>/);
   assert.doesNotMatch(light, /T00:00:00|UTC/);
-  assert.match(light, /#006edb/);
-  assert.match(light, /#d1f0ff/);
+  assert.match(light, /#0969da/);
   assert.match(light, /<path d="M[^>]+ C/);
-  assert.match(dark, /#006edb/);
-  assert.match(dark, /#d1f0ff/);
+  assert.match(dark, /#58a6ff/);
   assert.doesNotMatch(light, /height="32" rx="16"/);
   assert.doesNotMatch(dark, /height="32" rx="16"/);
   assert.doesNotMatch(light, /nicoloboschi|external font|powered by/);
@@ -178,6 +176,6 @@ test('writeRepositoryOutputs writes schema v2 and both SVG variants', async () =
   assert.equal(data.schemaVersion, 2);
   assert.equal(data.repository, 'TheBoredTeam/boring.notch');
   assert.deepEqual(data.points.at(-1), { date: '2026-08-04', stars: 2 });
-  assert.match(await readFile(join(outputDirectory, 'chart-light.svg'), 'utf8'), /#006edb/);
-  assert.match(await readFile(join(outputDirectory, 'chart-dark.svg'), 'utf8'), /#006edb/);
+  assert.match(await readFile(join(outputDirectory, 'chart-light.svg'), 'utf8'), /#0969da/);
+  assert.match(await readFile(join(outputDirectory, 'chart-dark.svg'), 'utf8'), /#58a6ff/);
 });
