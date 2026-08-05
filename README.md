@@ -4,9 +4,9 @@ This repository contains a scheduled GitHub Actions workflow that records star h
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="projects/boring.notch/chart-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="projects/boring.notch/chart-light.svg">
-    <img src="projects/boring.notch/chart-light.svg" alt="TheBoredTeam/boring.notch GitHub star history">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TheBoredTeam/org-star-chart-updater/main/projects/boring.notch/chart-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/TheBoredTeam/org-star-chart-updater/main/projects/boring.notch/chart-light.svg">
+    <img src="https://raw.githubusercontent.com/TheBoredTeam/org-star-chart-updater/main/projects/boring.notch/chart-light.svg" alt="TheBoredTeam/boring.notch GitHub star history">
   </picture>
 </p>
 
