@@ -1,0 +1,47 @@
+name: Update org star chart
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: boring
+          repositories: notch
+
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          repository: boring/notch
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Update stars chart
+        uses: nicoloboschi/gh-stars@c659f0480850de4072c66927d0a6c86769f416c5
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          dry-run: false
+
+      - name: Commit and push updated chart
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No star chart changes"
+            exit 0
+          fi
+          git add README.md
+          git commit -m "chore: update org star chart"
+          git push
