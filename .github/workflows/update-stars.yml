@@ -14,12 +14,11 @@ jobs:
     steps:
       - name: Generate GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          owner: boring
-          repositories: notch
+          repositories: boring.notch
 
       - name: Checkout target repository
         uses: actions/checkout@v4
