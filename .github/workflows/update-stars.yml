@@ -9,7 +9,10 @@ permissions:
   contents: write
 
 jobs:
-  update-chart:
+  update:
+    concurrency:
+      group: gh-stars-storage
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -19,28 +22,18 @@ jobs:
           app-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
           repositories: boring.notch
-
-      - name: Checkout target repository
-        uses: actions/checkout@v4
-        with:
-          repository: TheBoredTeam/boring.notch
-          token: ${{ steps.app-token.outputs.token }}
-          fetch-depth: 0
-
-      - name: Update stars chart
-        uses: nicoloboschi/gh-stars@c659f0480850de4072c66927d0a6c86769f416c5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: nicoloboschi/gh-stars@c659f0480850de4072c66927d0a6c86769f416c5
         with:
           github-token: ${{ steps.app-token.outputs.token }}
-          dry-run: false
-
-      - name: Commit and push updated chart
+          repository: TheBoredTeam/boring.notch
+          history-path: projects/boring.notch/data.json
+          svg-path: projects/boring.notch/chart.svg
+          line-color: '#14b8a6'
+      - name: Commit chart
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
-            echo "No star chart changes"
-            exit 0
-          fi
-          git add README.md
-          git commit -m "chore: update org star chart"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add projects/OWNER--PROJECT
+          git diff --cached --quiet || git commit -m 'chore: update OWNER/PROJECT star history'
           git push
