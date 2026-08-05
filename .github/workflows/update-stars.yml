@@ -12,17 +12,26 @@ jobs:
   update-chart:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: boring
+          repositories: notch
+
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           repository: boring/notch
-          token: ${{ secrets.ORG_STAR_CHART_APP_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
       - name: Update stars chart
         uses: nicoloboschi/gh-stars@9c4b2ff74fda67d6e6f5f4f3ec9f73d4ff0c53ad
         with:
-          github-token: ${{ secrets.ORG_STAR_CHART_APP_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           dry-run: false
 
       - name: Commit and push updated chart
