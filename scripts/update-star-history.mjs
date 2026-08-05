@@ -174,11 +174,25 @@ export function escapeXml(value) {
     .replaceAll("'", '&apos;');
 }
 
-function niceMaximum(value) {
-  const magnitude = 10 ** Math.floor(Math.log10(Math.max(1, value)));
-  const normalized = value / magnitude;
-  const niceNormalized = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
-  return niceNormalized * magnitude;
+function linearTickValues(maximum, count = 5) {
+  if (!Number.isFinite(maximum) || maximum <= 0) return [0];
+
+  const rawStep = maximum / Math.max(1, count);
+  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+  const normalized = rawStep / magnitude;
+  const stepFactor = normalized >= Math.sqrt(50)
+    ? 10
+    : normalized >= Math.sqrt(10)
+      ? 5
+      : normalized >= Math.sqrt(2)
+        ? 2
+        : 1;
+  const step = stepFactor * magnitude;
+  const ticks = [];
+  for (let value = 0; value <= maximum + step * 1e-9; value += step) {
+    ticks.push(Number(value.toPrecision(12)));
+  }
+  return ticks;
 }
 
 function formatDateTick(timestamp, spanDays) {
@@ -192,6 +206,20 @@ function formatDateTick(timestamp, spanDays) {
 
 function formatNumber(value) {
   return value.toLocaleString('en-US');
+}
+
+function formatAxisNumber(value) {
+  if (value >= 1_000_000) {
+    return value % 1_000_000 === 0
+      ? `${value / 1_000_000}M`
+      : `${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (value >= 300) {
+    return value % 1_000 === 0
+      ? `${value / 1_000}K`
+      : `${(value / 1_000).toFixed(1)}K`;
+  }
+  return String(value);
 }
 
 function formatUpdatedDate(value) {
@@ -246,7 +274,7 @@ export function renderStarHistorySvg(
   const timeSpan = Math.max(86_400_000, lastTime - firstTime);
   const spanDays = timeSpan / 86_400_000;
   const total = series.at(-1).stars;
-  const yMaximum = niceMaximum(total);
+  const yMaximum = Math.max(1, total);
   const xFor = (timestamp) => margin.left + ((timestamp - firstTime) / timeSpan) * plotWidth;
   const yFor = (stars) => margin.top + plotHeight - (stars / yMaximum) * plotHeight;
 
@@ -263,19 +291,17 @@ export function renderStarHistorySvg(
   const baseline = margin.top + plotHeight;
   const areaPath = `${linePath} L${points.at(-1).x.toFixed(2)},${baseline.toFixed(2)} L${points[0].x.toFixed(2)},${baseline.toFixed(2)} Z`;
 
-  const yTicks = Array.from({ length: 6 }, (_, index) => {
-    const value = (yMaximum / 5) * index;
+  const yTicks = linearTickValues(yMaximum).map((value) => {
     const y = yFor(value);
     return `
       <line x1="${margin.left}" y1="${y.toFixed(2)}" x2="${width - margin.right}" y2="${y.toFixed(2)}" stroke="${palette.grid}" stroke-width="1" />
-      <text x="${margin.left - 14}" y="${(y + 4).toFixed(2)}" text-anchor="end" fill="${palette.muted}" font-size="12">${formatNumber(Math.round(value))}</text>`;
+      <text x="${margin.left - 14}" y="${(y + 4).toFixed(2)}" text-anchor="end" fill="${palette.muted}" font-size="12">${escapeXml(formatAxisNumber(value))}</text>`;
   }).join('').trim();
 
   const xTicks = Array.from({ length: 5 }, (_, index) => {
     const timestamp = firstTime + (timeSpan * index) / 4;
     const x = xFor(timestamp);
     return `
-      <line x1="${x.toFixed(2)}" y1="${margin.top}" x2="${x.toFixed(2)}" y2="${baseline}" stroke="${palette.grid}" stroke-width="1" />
       <text x="${x.toFixed(2)}" y="${height - 28}" text-anchor="middle" fill="${palette.muted}" font-size="12">${escapeXml(formatDateTick(timestamp, spanDays))}</text>`;
   }).join('').trim();
 
@@ -289,7 +315,7 @@ export function renderStarHistorySvg(
   <rect width="${width}" height="${height}" rx="12" fill="${palette.background}" stroke="${palette.border}" />
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
     <text x="${margin.left}" y="40" fill="${palette.text}" font-size="24" font-weight="600">Star History</text>
-    <text x="${width - margin.right}" y="42" text-anchor="end" fill="${palette.text}" font-size="18" font-weight="600">${formatNumber(total)} stars</text>
+    <text x="${width - margin.right}" y="40" text-anchor="end" fill="${palette.muted}" font-size="14" font-weight="500">${formatNumber(total)} stars</text>
     <text x="${margin.left}" y="64" fill="${palette.muted}" font-size="13">${escapeXml(repository)}</text>
     ${yTicks}
     ${xTicks}
