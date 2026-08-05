@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "TheBoredTeam/boring.notch",
-  "backfilledAt": "2026-08-05T04:06:54.811Z",
-  "backfill": [
+  "generatedAt": "2026-08-05T04:56:22.102Z",
+  "points": [
     {
       "date": "2024-08-02",
       "stars": 7
@@ -2934,9 +2934,7 @@
     {
       "date": "2026-08-04",
       "stars": 10238
-    }
-  ],
-  "snapshots": [
+    },
     {
       "date": "2026-08-05",
       "stars": 10238
