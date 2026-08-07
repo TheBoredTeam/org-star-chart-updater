@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "repository": "TheBoredTeam/boring.notch",
-  "generatedAt": "2026-08-06T06:02:39.263Z",
+  "generatedAt": "2026-08-07T05:00:49.778Z",
   "points": [
     {
       "date": "2024-08-02",
@@ -2941,7 +2941,11 @@
     },
     {
       "date": "2026-08-06",
-      "stars": 10251
+      "stars": 10269
+    },
+    {
+      "date": "2026-08-07",
+      "stars": 10269
     }
   ]
 }
